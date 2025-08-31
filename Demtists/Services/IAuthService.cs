@@ -1,10 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Demtists.Domian;
 using Demtists.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Demtists.Services;
 using ErrorOr;
@@ -97,9 +97,9 @@ public class AuthService : IAuthService
     public async Task<ErrorOr<AuthResponseDto>> VerifyPhoneAsync(VerifyPhoneDto verifyDto)
     {
         var verification = await _context.SmsVerifications
-            .FirstOrDefaultAsync(s => s.PhoneNumber == verifyDto.PhoneNumber 
-                && s.VerificationCode == verifyDto.VerificationCode 
-                && s.IsUsed 
+            .FirstOrDefaultAsync(s => s.PhoneNumber == verifyDto.PhoneNumber
+                && s.VerificationCode == verifyDto.VerificationCode
+                && s.IsUsed
                 && s.ExpiresAt > DateTime.Now);
 
         if (verification == null)

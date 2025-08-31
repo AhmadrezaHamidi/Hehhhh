@@ -48,7 +48,6 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Reservation Configuration
         modelBuilder.Entity<Reservation>(entity =>
         {
             entity.HasKey(r => r.Id);
@@ -71,24 +70,27 @@ public class ApplicationDbContext : DbContext
         // Seed Specialties
         modelBuilder.Entity<Specialty>().HasData(
             new Specialty
-                { Id = 1, Name = "ایمپلنت", Description = "کاشت دندان", HasInstallments = true, IsActive = true },
+            { Id = 1, Name = "ایمپلنت", Description = "کاشت دندان", HasInstallments = true, IsActive = true },
             new Specialty
-                { Id = 2, Name = "لمینت", Description = "روکش زیبایی", HasInstallments = false, IsActive = true },
+            { Id = 2, Name = "لمینت", Description = "روکش زیبایی", HasInstallments = false, IsActive = true },
             new Specialty
-                { Id = 3, Name = "درمان ریشه", Description = "عصب کشی", HasInstallments = false, IsActive = true },
+            { Id = 3, Name = "درمان ریشه", Description = "عصب کشی", HasInstallments = false, IsActive = true },
             new Specialty
-                { Id = 4, Name = "ترمیم", Description = "پر کردن دندان", HasInstallments = false, IsActive = true },
+            { Id = 4, Name = "ترمیم", Description = "پر کردن دندان", HasInstallments = false, IsActive = true },
             new Specialty
             {
-                Id = 5, Name = "پروتز ثابت و متحرک", Description = "دندان مصنوعی", HasInstallments = false,
+                Id = 5,
+                Name = "پروتز ثابت و متحرک",
+                Description = "دندان مصنوعی",
+                HasInstallments = false,
                 IsActive = true
             },
             new Specialty
-                { Id = 6, Name = "ارتودنسی", Description = "تقویم دندان", HasInstallments = false, IsActive = true },
+            { Id = 6, Name = "ارتودنسی", Description = "تقویم دندان", HasInstallments = false, IsActive = true },
             new Specialty
-                { Id = 7, Name = "بلیچینگ", Description = "سفید کردن", HasInstallments = false, IsActive = true },
+            { Id = 7, Name = "بلیچینگ", Description = "سفید کردن", HasInstallments = false, IsActive = true },
             new Specialty
-                { Id = 8, Name = "کامپوزیت", Description = "ترمیم زیبایی", HasInstallments = false, IsActive = true }
+            { Id = 8, Name = "کامپوزیت", Description = "ترمیم زیبایی", HasInstallments = false, IsActive = true }
         );
     }
 }
