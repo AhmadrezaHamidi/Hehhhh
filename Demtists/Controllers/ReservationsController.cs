@@ -162,7 +162,7 @@ namespace Demtists.Controllers
 
         // POST: api/reservations
         [HttpPost]
-        public async Task<ActionResult<ReservationDto>> CreateReservation(CreateReservationDto createDto)
+        public async Task<ActionResult<ReservationDto>> CreateReservation([FromBody]CreateReservationDto createDto)
         {
             var currentUserId = GetCurrentUserId();
 

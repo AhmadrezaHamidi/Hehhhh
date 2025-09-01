@@ -8,4 +8,5 @@ public class UserDto
     public string PhoneNumber { get; set; } = string.Empty;
     public string NationalId { get; set; } = string.Empty;
     public bool IsPhoneVerified { get; set; }
+    public string Role { get; set; }
 }

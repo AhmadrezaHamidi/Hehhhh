@@ -28,7 +28,15 @@ public class User
 
     public DateTime? UpdatedAt { get; set; }
 
+    public UserRole Role { get; set; } = UserRole.User; // پیش‌فرض User
+
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+}
+
+public enum UserRole
+{
+    User = 0,
+    Admin = 1
 }
 
 public class Reservation

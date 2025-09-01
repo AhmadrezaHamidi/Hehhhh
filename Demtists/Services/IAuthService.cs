@@ -8,6 +8,7 @@ using System.Text;
 
 namespace Demtists.Services;
 using ErrorOr;
+using static Demtists.Controllers.AuthController;
 
 public interface IAuthService
 {
@@ -15,7 +16,9 @@ public interface IAuthService
     Task<ErrorOr<string>> RegisterUserAsync(RegisterDto registerDto);
     Task<ErrorOr<AuthResponseDto>> VerifyPhoneAsync(VerifyPhoneDto verifyDto);
     Task<ErrorOr<AuthResponseDto>> LoginAsync(string phoneNumber);
+    Task<ErrorOr<string>> RegisterAdminAsync(RegisterAdminDto registerDto);
 }
+
 
 public class AuthService : IAuthService
 {
@@ -29,6 +32,40 @@ public class AuthService : IAuthService
         _smsService = smsService;
         _configuration = configuration;
     }
+
+    public async Task<ErrorOr<string>> RegisterAdminAsync(RegisterAdminDto registerDto)
+    {
+        var existingUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.PhoneNumber == registerDto.PhoneNumber || u.NationalId == registerDto.NationalId);
+
+        if (existingUser != null)
+        {
+            existingUser.Role = UserRole.Admin;
+            _context.Users.Update(existingUser); 
+        }
+
+        var user = new User
+        {
+            FirstName = registerDto.FirstName,
+            LastName = registerDto.LastName,
+            NationalId = registerDto.NationalId,
+            PhoneNumber = registerDto.PhoneNumber,
+            IsPhoneVerified = false,
+            Role = UserRole.Admin // نقش ادمین
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // ارسال کد تأیید
+        var smsResult = await SendVerificationCodeAsync(registerDto.PhoneNumber);
+        if (smsResult.IsError)
+        {
+            return Error.Failure("Sms.Failed", "ادمین ثبت شد اما کد تأیید ارسال نشد");
+        }
+        return user.PhoneNumber;
+    }
+
 
     public async Task<ErrorOr<string>> SendVerificationCodeAsync(string phoneNumber)
     {
@@ -44,8 +81,8 @@ public class AuthService : IAuthService
         {
             PhoneNumber = phoneNumber,
             VerificationCode = code,
-            ExpiresAt = DateTime.Now.AddMinutes(1),
-            IsUsed = true
+            ExpiresAt = DateTime.Now.AddMinutes(5), // 5 دقیقه مناسب‌تر است
+            IsUsed = false // باید false باشد تا قابل استفاده باشد
         };
 
         _context.SmsVerifications.Add(verification);
@@ -79,7 +116,8 @@ public class AuthService : IAuthService
             LastName = registerDto.LastName,
             NationalId = registerDto.NationalId,
             PhoneNumber = registerDto.PhoneNumber,
-            IsPhoneVerified = false
+            IsPhoneVerified = false,
+            Role = UserRole.User // پیش‌فرض User
         };
 
         _context.Users.Add(user);
@@ -99,7 +137,7 @@ public class AuthService : IAuthService
         var verification = await _context.SmsVerifications
             .FirstOrDefaultAsync(s => s.PhoneNumber == verifyDto.PhoneNumber
                 && s.VerificationCode == verifyDto.VerificationCode
-                && s.IsUsed
+                && !s.IsUsed // باید استفاده نشده باشد
                 && s.ExpiresAt > DateTime.Now);
 
         if (verification == null)
@@ -136,7 +174,8 @@ public class AuthService : IAuthService
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 NationalId = user.NationalId,
-                IsPhoneVerified = user.IsPhoneVerified
+                IsPhoneVerified = user.IsPhoneVerified,
+                Role = user.Role.ToString() // اضافه کردن نقش
             }
         };
     }
@@ -175,7 +214,8 @@ public class AuthService : IAuthService
                 LastName = user.LastName,
                 PhoneNumber = user.PhoneNumber,
                 NationalId = user.NationalId,
-                IsPhoneVerified = user.IsPhoneVerified
+                IsPhoneVerified = user.IsPhoneVerified,
+                Role = user.Role.ToString() // اضافه کردن نقش
             }
         };
     }
@@ -193,7 +233,8 @@ public class AuthService : IAuthService
             new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
             new(ClaimTypes.MobilePhone, user.PhoneNumber),
             new("NationalId", user.NationalId),
-            new("IsPhoneVerified", user.IsPhoneVerified.ToString())
+            new("IsPhoneVerified", user.IsPhoneVerified.ToString()),
+            new(ClaimTypes.Role, user.Role.ToString()) // اضافه کردن نقش به Claims
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));

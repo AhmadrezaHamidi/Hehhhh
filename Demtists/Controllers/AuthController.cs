@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+using System.Data;
 using Demtists.Dtos;
 using Demtists.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Demtists.Controllers;
@@ -47,15 +50,34 @@ public class AuthController : ControllerBase
 
         return Ok(result.Value);
     }
+    [HttpPost("register-admin")]
+    [Authorize(Roles = "Admin")] // فقط ادمین می‌تواند ادمین جدید ثبت کند
+    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterAdminDto registerDto)
+    {
+        var result = await _authService.RegisterAdminAsync(registerDto);
 
-    //[HttpPost("login")]
-    //public async Task<IActionResult> Login([FromBody] SendVerificationDto dto)
-    //{
-    //    var result = await _authService.LoginAsync(dto.PhoneNumber);
-        
-    //    if (result.IsError)
-    //        return BadRequest(new { message = result.FirstError.Description });
+        if (result.IsError)
+            return BadRequest(new { message = result.FirstError.Description });
+        return Ok(new { phoneNumber = result.Value, message = "ادمین ثبت شد. کد تأیید ارسال شد" });
+    }
 
-    //    return Ok(result.Value);
-    //}
+
+    public class RegisterAdminDto
+    {
+        [Required(ErrorMessage = "نام الزامی است")]
+        [StringLength(50, ErrorMessage = "نام نمی‌تواند بیش از 50 کاراکتر باشد")]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "نام خانوادگی الزامی است")]
+        [StringLength(50, ErrorMessage = "نام خانوادگی نمی‌تواند بیش از 50 کاراکتر باشد")]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "کد ملی الزامی است")]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "کد ملی باید 10 رقم باشد")]
+        public string NationalId { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "شماره موبایل الزامی است")]
+        [StringLength(11, MinimumLength = 11, ErrorMessage = "شماره موبایل باید 11 رقم باشد")]
+        public string PhoneNumber { get; set; } = string.Empty;
+    }
 }
