@@ -1,6 +1,14 @@
-﻿{
-  "port": 80,
-  "dotnet": {
-    "version": "8.0"
-  }
+﻿//{
+//  "port": 80,
+//  "dotnet": {
+//    "version": "8.0"
+//  }
+//}
+{
+  "app": "dentis",
+  "port": 3000,
+  "build": {
+    "location": "iran"
+  },
+  "disks": []
 }
