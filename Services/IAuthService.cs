@@ -134,7 +134,9 @@ public class AuthService : IAuthService
 
     public async Task<ErrorOr<AuthResponseDto>> VerifyPhoneAsync(VerifyPhoneDto verifyDto)
     {
-        var verification = await _context.SmsVerifications
+        try
+        {
+            var verification = await _context.SmsVerifications
             .FirstOrDefaultAsync(s => s.PhoneNumber == verifyDto.PhoneNumber
                 && s.VerificationCode == verifyDto.VerificationCode
                 && !s.IsUsed // باید استفاده نشده باشد
@@ -153,11 +155,9 @@ public class AuthService : IAuthService
             return Error.NotFound("User.NotFound", "کاربر یافت نشد");
         }
 
-        // تأیید شماره تلفن
         user.IsPhoneVerified = true;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.Now;
 
-        // استفاده از کد
         verification.IsUsed = true;
 
         await _context.SaveChangesAsync();
@@ -166,7 +166,7 @@ public class AuthService : IAuthService
         return new AuthResponseDto
         {
             Token = token,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(_configuration.GetValue<int>("Authentication:JwtExpireMins")),
+            ExpiresAt = DateTime.Now.AddMinutes(_configuration.GetValue<int>("Authentication:JwtExpireMins")),
             User = new UserDto
             {
                 Id = user.Id,
@@ -178,6 +178,13 @@ public class AuthService : IAuthService
                 Role = user.Role.ToString() // اضافه کردن نقش
             }
         };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return Error.Failure("Verification.Failed", $"{ex.Message}");
+        }
+
     }
 
     public async Task<ErrorOr<AuthResponseDto>> LoginAsync(string phoneNumber)
