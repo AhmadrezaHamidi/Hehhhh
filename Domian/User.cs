@@ -87,3 +87,19 @@ public enum ReservationStatus
     Cancelled = 3,
     Completed = 4
 }
+
+
+public class SpecialtyWorkingHour
+{
+    public int Id { get; set; }
+    public int SpecialtyId { get; set; }
+    public DayOfWeek DayOfWeek { get; set; } // روز هفته (0=یکشنبه)
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
+    public int SlotDurationMinutes { get; set; } = 30; // مدت زمان هر اسلات (پیش‌فرض 30 دقیقه)
+    public bool IsActive { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // Navigation Properties
+    public virtual Specialty Specialty { get; set; } = null!;
+}

@@ -36,25 +36,33 @@ public class AuthService : IAuthService
     public async Task<ErrorOr<string>> RegisterAdminAsync(RegisterAdminDto registerDto)
     {
         var existingUser = await _context.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber == registerDto.PhoneNumber || u.NationalId == registerDto.NationalId);
+            .FirstOrDefaultAsync(u => u.NationalId == registerDto.NationalId);
+
+
+        string Phumber = string.Empty;
 
         if (existingUser != null)
         {
             existingUser.Role = UserRole.Admin;
-            _context.Users.Update(existingUser); 
+            _context.Users.Update(existingUser);
+            Phumber = existingUser.PhoneNumber;
+        }
+        else
+        {
+            var user = new User
+            {
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                NationalId = registerDto.NationalId,
+                PhoneNumber = registerDto.PhoneNumber,
+                IsPhoneVerified = false,
+                Role = UserRole.Admin // نقش ادمین
+            };
+
+            _context.Users.Add(user);
+            Phumber = user.PhoneNumber;
         }
 
-        var user = new User
-        {
-            FirstName = registerDto.FirstName,
-            LastName = registerDto.LastName,
-            NationalId = registerDto.NationalId,
-            PhoneNumber = registerDto.PhoneNumber,
-            IsPhoneVerified = false,
-            Role = UserRole.Admin // نقش ادمین
-        };
-
-        _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
         // ارسال کد تأیید
@@ -63,7 +71,7 @@ public class AuthService : IAuthService
         {
             return Error.Failure("Sms.Failed", "ادمین ثبت شد اما کد تأیید ارسال نشد");
         }
-        return user.PhoneNumber;
+        return Phumber;
     }
 
 
